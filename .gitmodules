@@ -1,0 +1,3 @@
+[submodule "cs110-lab6-front"]
+	path = cs110-lab6-front
+	url = https://github.com/nibchao/cs110-lab6-front.git

@@ -14,7 +14,12 @@ const server = http.createServer(app);
 
 
 // TODO: add cors to allow cross origin requests
-
+const io = socketIO(server, {
+  cors: {
+    origin: '*',
+  }
+});
+app.use(cors({origin: 'http://localhost:3000', credentials:true }))
 
 
 
@@ -26,12 +31,22 @@ app.use(bodyParser.json());
 
 // Connect to the database
 // TODO: your code here
+mongoose.connect(process.env.MONGO_URL);
+const database = mongoose.connection;
 
+database.on('error', (error) => console.error(error));
+database.once('open', () => console.log('Connected to Database'));
 
 
 // Set up the session
 // TODO: your code here
+const sessionMiddleware = session({
+  resave: false, // Whether to save the session to the store on every request
+  saveUninitialized: false, // Whether to save uninitialized sessions to the store
+  secret: process.env.SESSION_SECRET,
+})
 
+app.use(sessionMiddleware);
 
 
 

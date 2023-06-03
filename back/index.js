@@ -46,8 +46,8 @@ app.get("/", (req, res) => {
   if (req.session && req.session.authenticated) {
     res.json({ message: "logged in" });
   } else {
-    console.log("not logged in");
-    res.json({ message: "not logged" });
+    //console.log("not logged in");
+    res.json({ message: "not logged in" });
   }
 });
 
@@ -70,8 +70,6 @@ server.listen(process.env.PORT, () => {
   console.log(`Server listening on port ${process.env.PORT}`);
 });
 
-// TODO: make sure that the user is logged in before connecting to the socket
-// TODO: your code here
 io.use((socket, next) => {
   console.log("socket io middleware");
   sessionMiddleware(socket.request, {}, next);

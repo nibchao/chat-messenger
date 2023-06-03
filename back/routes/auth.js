@@ -18,7 +18,7 @@ router.post('/login', async (req, res) => {
     else {
       session.authenticated = true;
       session.username = username;
-      res.json({ msg: "Logged in", status: true });
+      res.json({ message: "Logged in", status: true });
     }
 });
 
@@ -26,5 +26,8 @@ router.post('/login', async (req, res) => {
 router.get('/logout', (req, res) => {
     // Clear the session data and redirect to the home page
     req.session.destroy();
-    res.send({msg: "Logged out", status: true})
+    res.send({message: "Logged out", status: true})
   });
+
+// extra feature for final project: add route that lets user edit account information 
+// Allow users to have profile pictures and edit their name or profile picture: 5%.

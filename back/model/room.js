@@ -9,7 +9,12 @@ const roomSchema = mongoose.Schema(
     },
     {
         timestamps: true,
-    }
+    },
+    {
+        messageHistory: [{
+            type: String
+        }]
+    },
 );
 
 module.exports = mongoose.model("Room", roomSchema);

@@ -22,11 +22,12 @@ router.post("/login", async (req, res) => {
 });
 
 router.post("/register", async (req, res) => {
-  const { username, password, name } = req.body;
+  const { username, password, name, rooms } = req.body;
   const user = new User({
     username: username,
     password: password,
     name: name,
+    rooms: rooms
   });
 
   const dupeUserCheck = await User.findOne({ username });

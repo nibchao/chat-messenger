@@ -86,9 +86,27 @@ io.use((socket, next) => {
 
 io.on("connection", (socket) => {
   console.log("user connected");
-  // TODO: write codes for the messaging functionality
-  // TODO: your code here
+  let room = undefined;
+  let username = undefined;
 
+  socket.on("disconnect", () => {
+    console.log("user disconnected");
+  });
+
+  socket.on("chat message", (data) => {
+    console.log("chat message was: ", data);
+    io.to(room).emit("chat message: ", data);
+  });
+
+  socket.on("join", (data) => {
+    socket.join(data.room);
+    room = data.room;
+    username = data.username;
+    console.log(`${username} joined the room ${room}`);
+  });
+
+  socket.emit("starting data", {
+    text: "testing connection io on index.js server",
+  });
   // new from week 7/8: first time user joins room, load past message history
-  // look at week 7/8 repo for when user sends messages in rooms, build off callback code from the chat room examples
 });

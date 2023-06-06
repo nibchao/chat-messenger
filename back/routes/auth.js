@@ -27,7 +27,7 @@ router.post("/register", async (req, res) => {
     username: username,
     password: password,
     name: name,
-    rooms: rooms
+    rooms: rooms,
   });
 
   const dupeUserCheck = await User.findOne({ username });

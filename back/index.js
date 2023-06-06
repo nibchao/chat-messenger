@@ -102,7 +102,7 @@ io.on("connection", (socket) => {
     socket.join(data.room);
     room = data.room;
     username = data.username;
-    console.log(`${username} joined the room ${room}`)
+    console.log(`${username} joined the room ${room}`);
     //socket.to(room).emit(room.messages);
   });
 

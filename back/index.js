@@ -70,51 +70,28 @@ server.listen(process.env.PORT, () => {
   console.log(`Server listening on port ${process.env.PORT}`);
 });
 
-io.use((socket, next) => {
-  console.log("socket io middleware");
-  sessionMiddleware(socket.request, {}, next);
-});
-
-io.use((socket, next) => {
-  if (socket.request.session && socket.request.session.authenticated) {
-    next();
-  } else {
-    console.log("unauthorized");
-    next(new Error("unauthorized"));
-  }
-});
-
+// Handle socket.io connections
 io.on("connection", (socket) => {
-  console.log("user connected");
-  let room = undefined;
-  let username = undefined;
-
-  socket.on("disconnect", () => {
-    console.log("user disconnected");
-  });
-
-  // socket.on("chat message", (data) => {
-  //   console.log("chat message was: ", data);
-  //   io.to(room).emit("chat message: ", data);
-  // });
-
-    // Event listener for chat messages
-    socket.on("chat message", (message) => {
-      console.log("Received message:", message);
-      // Broadcast the message to all connected clients
-      io.emit("chat message", message);
-    });
+  console.log("User connected");
 
   socket.on("join", (data) => {
-    socket.join(data.room);
-    room = data.room;
-    username = data.username;
-    console.log(`${username} joined the room ${room}`);
-    //socket.to(room).emit(room.messages);
+    const { room } = data;
+    socket.join(room);
+    console.log(`User joined room ${room}`);
   });
 
-  socket.emit("starting data", {
-    text: "testing connection io on index.js server",
+  socket.on("leave", (data) => {
+    const { room } = data;
+    socket.leave(room);
+    console.log(`User left room ${room}`);
   });
-  // new from week 7/8: first time user joins room, load past message history
+
+  socket.on("chat message", (data) => {
+    const { room, text } = data;
+    io.to(room).emit("chat message", { room, text });
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected");
+  });
 });

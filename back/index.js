@@ -70,6 +70,21 @@ server.listen(process.env.PORT, () => {
   console.log(`Server listening on port ${process.env.PORT}`);
 });
 
+
+io.use((socket, next) => {
+  console.log("socket io middleware");
+  sessionMiddleware(socket.request, {}, next);
+});
+
+io.use((socket, next) => {
+  if (socket.request.session && socket.request.session.authenticated) {
+    next();
+  } else {
+    console.log("unauthorized");
+    next(new Error("unauthorized"));
+  }
+});
+
 // Handle socket.io connections
 io.on("connection", (socket) => {
   console.log("User connected");

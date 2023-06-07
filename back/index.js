@@ -93,10 +93,17 @@ io.on("connection", (socket) => {
     console.log("user disconnected");
   });
 
-  socket.on("chat message", (data) => {
-    console.log("chat message was: ", data);
-    io.to(room).emit("chat message: ", data);
-  });
+  // socket.on("chat message", (data) => {
+  //   console.log("chat message was: ", data);
+  //   io.to(room).emit("chat message: ", data);
+  // });
+
+    // Event listener for chat messages
+    socket.on("chat message", (message) => {
+      console.log("Received message:", message);
+      // Broadcast the message to all connected clients
+      io.emit("chat message", message);
+    });
 
   socket.on("join", (data) => {
     socket.join(data.room);

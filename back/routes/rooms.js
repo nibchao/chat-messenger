@@ -17,14 +17,24 @@ router.get("/all", (req, res) => {
 router.post("/create", async (req, res) => {
   let name = req.body.roomName;
 
+  const newRoom = new Room({name: name});
+
   const existingRoom = await Room.findOne({ name: name });
   if (existingRoom) {
     return res.json({ message: "Room exists", status: false });
   } else if (!name) {
     return res.json({ message: "Invalid room name", status: false });
   } else {
-    rooms.push(name);
-    return res.json({ message: `${name} room created`, status: true });
+    
+    try {
+      const dataSaved = await newRoom.save();
+      res.status(200).json(dataSaved);
+      console.log("Room with name " + name + " was created");
+      rooms.push(name);
+    } catch (error) {
+      console.log(error);
+      res.send("ERROR!");
+    }
   }
 });
 

@@ -6,6 +6,9 @@ const session = require("express-session");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
+const Messages = require('./model/messages')
+const User = require('./model/user');
+const Room = require('./model/room');
 
 const app = express();
 const server = http.createServer(app);
@@ -104,6 +107,12 @@ io.on("connection", (socket) => {
   socket.on("chat message", (data) => {
     const { room, text } = data;
     io.to(room).emit("chat message", { room, text });
+    console.log('session data:', data);
+    // once i figure out how to send username with the message
+    // await user, await room
+    // await messages using the two await values above
+    // messages.save
+    // # the above should hypothetically save the room's message history with the message, sender, and room
   });
 
   socket.on("disconnect", () => {

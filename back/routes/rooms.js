@@ -37,7 +37,6 @@ router.post("/create", async (req, res) => {
       const dataSaved = await newRoom.save();
       res.status(200).json(dataSaved);
       console.log("Room with name " + name + " was created");
-      rooms.push(name);
     } catch (error) {
       console.log(error);
       res.send("ERROR!");

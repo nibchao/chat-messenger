@@ -2,7 +2,8 @@ const express = require("express");
 const router = express.Router();
 const Room = require("../model/room");
 const User = require("../model/user");
-// TODO: add rest of the necassary imports
+const Messages = require("../model/messages");
+var ObjectId = require("mongoose").Types.ObjectId;
 
 module.exports = router;
 
@@ -76,18 +77,34 @@ router.delete("/leave", async (req, res) => {
 
   const leaveRoom = await Room.findOne({ name: room });
 
-  if (!leaveRoom)
-  {
-    console.log('room does not exist to delete');
-  }
-  else
-  {
+  if (!leaveRoom) {
+    console.log("room does not exist to delete");
+  } else {
     try {
       const user = await User.findOne({ username: username });
-      user.rooms = user.rooms.filter(roomVar => roomVar !== room);
+      user.rooms = user.rooms.filter((roomVar) => roomVar !== room);
       const dataSaved = await user.save();
       console.log("User left " + room);
       res.status(200).json(dataSaved);
+    } catch (error) {
+      console.log(error);
+      res.send("ERROR!");
+    }
+  }
+});
+
+router.get("/messages", async (req, res) => {
+  let room = req.body.roomName;
+
+  const allRooms = await Room.find({});
+  const filterRoomByName = allRooms.find((x) => x["name:"] === room);
+  if (!filterRoomByName) {
+    console.log("room does not exist to load message history from");
+  } else {
+    const roomID = filterRoomByName._id;
+    try {
+      const messageHistory = await Messages.find({ room: roomID });
+      res.status(200).json(messageHistory);
     } catch (error) {
       console.log(error);
       res.send("ERROR!");

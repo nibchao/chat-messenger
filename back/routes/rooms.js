@@ -70,7 +70,27 @@ router.post("/join", async (req, res) => {
   }
 });
 
-router.delete("/leave", (req, res) => {
-  // TODO: write necassary codes to delete a room
-  // when doing this, delete the specified room from "rooms array" for each user (found in user.js)
+router.delete("/leave", async (req, res) => {
+  let username = req.session.username;
+  let room = req.body.roomName;
+
+  const leaveRoom = await Room.findOne({ name: room });
+
+  if (!leaveRoom)
+  {
+    console.log('room does not exist to delete');
+  }
+  else
+  {
+    try {
+      const user = await User.findOne({ username: username });
+      user.rooms = user.rooms.filter(roomVar => roomVar !== room);
+      const dataSaved = await user.save();
+      console.log("User left " + room);
+      res.status(200).json(dataSaved);
+    } catch (error) {
+      console.log(error);
+      res.send("ERROR!");
+    }
+  }
 });

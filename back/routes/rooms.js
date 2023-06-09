@@ -105,6 +105,7 @@ router.get("/messages", async (req, res) => {
     try {
       const messageHistory = await Messages.find({ room: roomID });
       res.status(200).json(messageHistory);
+      //console.log('messageHistory:', messageHistory);
     } catch (error) {
       console.log(error);
       res.send("ERROR!");

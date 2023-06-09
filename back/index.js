@@ -6,9 +6,9 @@ const session = require("express-session");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
-const Messages = require('./model/messages')
-const User = require('./model/user');
-const Room = require('./model/room');
+const Messages = require("./model/messages");
+const User = require("./model/user");
+const Room = require("./model/room");
 
 const app = express();
 const server = http.createServer(app);
@@ -73,7 +73,6 @@ server.listen(process.env.PORT, () => {
   console.log(`Server listening on port ${process.env.PORT}`);
 });
 
-
 io.use((socket, next) => {
   console.log("socket io middleware");
   sessionMiddleware(socket.request, {}, next);
@@ -90,32 +89,38 @@ io.use((socket, next) => {
 
 // Handle socket.io connections
 io.on("connection", (socket) => {
-  console.log("User connected");
+  let username = socket.request.session.username;
+  console.log(`${username} connected.`);
 
   socket.on("join", (data) => {
     const { room } = data;
     socket.join(room);
-    console.log(`User joined room ${room}`);
+    console.log(`${username} joined room ${room}.`);
   });
 
   socket.on("leave", (data) => {
     const { room } = data;
     socket.leave(room);
-    console.log(`User left room ${room}`);
+    console.log(`${username} left room ${room}.`);
   });
 
-  socket.on("chat message", (data) => {
+  socket.on("chat message", async (data) => {
     const { room, text } = data;
     io.to(room).emit("chat message", { room, text });
-    console.log('session data:', data);
-    // once i figure out how to send username with the message
-    // await user, await room
-    // await messages using the two await values above
-    // messages.save
-    // # the above should hypothetically save the room's message history with the message, sender, and room
+    await Promise.all([
+      (findUser = await User.findOne({ username: username })),
+      (findRoom = await Room.findOne({ name: room })),
+    ]);
+
+    const chatMessage = new Messages({
+      message: { text: text },
+      sender: findUser._id,
+      room: findRoom._id,
+    });
+    const dataSaved = await chatMessage.save();
   });
 
   socket.on("disconnect", () => {
-    console.log("User disconnected");
+    console.log(`${username} disconnected.`);
   });
 });

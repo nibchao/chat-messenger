@@ -1,10 +1,11 @@
 const express = require("express");
 const User = require("../model/user");
 const router = express.Router();
-const bcrypt = require('bcryptjs')
-const nodemailer = require('nodemailer')
+const bcrypt = require("bcryptjs");
+const nodemailer = require("nodemailer");
+const speakeasy = require("speakeasy");
 
-const saltRounds = 10 // referenced https://heynode.com/blog/2020-04/salt-and-hash-passwords-bcrypt/
+const saltRounds = 10; // referenced https://heynode.com/blog/2020-04/salt-and-hash-passwords-bcrypt/
 
 module.exports = router;
 
@@ -18,41 +19,48 @@ router.post("/login", async (req, res) => {
   if (!user) return res.json({ message: "Incorrect Username ", status: false });
   else if (!(await bcrypt.compare(req.body.password, user.password)))
     return res.json({ message: "Incorrect Password", status: false });
-  else {
-    const test = async function main() { // referenced https://nodemailer.com/about/
-      let testAccount = await nodemailer.createTestAccount();
-
-      let transporter = nodemailer.createTransport({
-        host: "smtp.ethereal.email",
-        port: 587,
-        secure: false, // true for 465, false for other ports
-        auth: {
-          user: testAccount.user, // generated ethereal user
-          pass: testAccount.pass, // generated ethereal password
-        },
-      });
-
-      let info = await transporter.sendMail({
-        from: '"Fred Foo 👻" <foo@example.com>', // sender address
-        to: "bar@example.com, baz@example.com", // list of receivers
-        subject: "Hello ✔", // Subject line
-        text: "Hello world?", // plain text body
-        html: "<b>Hello world?</b>", // html body
-      });
-
-      console.log("Message sent: %s", info.messageId);
-      console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
-    }
-    await test();
-    // session.authenticated = true;
-    // session.username = username;
-    // res.json({ message: "Logged in", status: true });
+  else if (req.body.otpToken !== req.body.generatedOTPToken) {
+    return res.json({ message: "Incorrect OTP Token", status: false });
+  } else {
+    session.authenticated = true;
+    session.username = username;
+    res.json({ message: "Logged in", status: true });
   }
+});
+
+router.get("/otptoken", async (req, res) => {
+  const secret = speakeasy.generateSecret();
+  const OTP = speakeasy.totp({ secret: secret.base32, encoding: "base32" });
+
+  const test = async function main() {
+    // referenced https://nodemailer.com/about/
+    let testAccount = await nodemailer.createTestAccount();
+
+    let transporter = nodemailer.createTransport({
+      host: "smtp.ethereal.email",
+      port: 587,
+      secure: false, // true for 465, false for other ports
+      auth: {
+        user: testAccount.user, // generated ethereal user
+        pass: testAccount.pass, // generated ethereal password
+      },
+    });
+
+    let info = await transporter.sendMail({
+      from: '"Fred Foo 👻" <foo@example.com>', // sender address
+      to: "bar@example.com, baz@example.com", // list of receivers
+      subject: "Hello ✔", // Subject line
+      html: `<p>Enter this code into the OTP field: ${OTP}</p>`, // html body
+    });
+    return nodemailer.getTestMessageUrl(info);
+  };
+  const dataSaved = { messageURL: await test(), generatedOTP: OTP };
+  res.status(200).json(dataSaved);
 });
 
 router.post("/register", async (req, res) => {
   const { username, password, email } = req.body;
-  const hashedPassword = await bcrypt.hash(password, saltRounds)
+  const hashedPassword = await bcrypt.hash(password, saltRounds);
 
   const user = new User({
     username: username,

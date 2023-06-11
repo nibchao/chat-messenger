@@ -2,6 +2,7 @@ const express = require("express");
 const User = require("../model/user");
 const router = express.Router();
 const bcrypt = require('bcryptjs')
+const nodemailer = require('nodemailer')
 
 const saltRounds = 10 // referenced https://heynode.com/blog/2020-04/salt-and-hash-passwords-bcrypt/
 
@@ -18,9 +19,34 @@ router.post("/login", async (req, res) => {
   else if (!(await bcrypt.compare(req.body.password, user.password)))
     return res.json({ message: "Incorrect Password", status: false });
   else {
-    session.authenticated = true;
-    session.username = username;
-    res.json({ message: "Logged in", status: true });
+    const test = async function main() { // referenced https://nodemailer.com/about/
+      let testAccount = await nodemailer.createTestAccount();
+
+      let transporter = nodemailer.createTransport({
+        host: "smtp.ethereal.email",
+        port: 587,
+        secure: false, // true for 465, false for other ports
+        auth: {
+          user: testAccount.user, // generated ethereal user
+          pass: testAccount.pass, // generated ethereal password
+        },
+      });
+
+      let info = await transporter.sendMail({
+        from: '"Fred Foo 👻" <foo@example.com>', // sender address
+        to: "bar@example.com, baz@example.com", // list of receivers
+        subject: "Hello ✔", // Subject line
+        text: "Hello world?", // plain text body
+        html: "<b>Hello world?</b>", // html body
+      });
+
+      console.log("Message sent: %s", info.messageId);
+      console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+    }
+    await test();
+    // session.authenticated = true;
+    // session.username = username;
+    // res.json({ message: "Logged in", status: true });
   }
 });
 

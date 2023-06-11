@@ -93,11 +93,11 @@ router.delete("/leave", async (req, res) => {
   }
 });
 
-router.get("/messages", async (req, res) => {
+router.post("/messages", async (req, res) => {
   let room = req.body.roomName;
 
   const allRooms = await Room.find({});
-  const filterRoomByName = allRooms.find((x) => x["name:"] === room);
+  const filterRoomByName = allRooms.find((x) => x["name"] === room);
   if (!filterRoomByName) {
     console.log("room does not exist to load message history from");
   } else {

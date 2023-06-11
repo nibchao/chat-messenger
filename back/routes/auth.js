@@ -15,12 +15,15 @@ router.post("/login", async (req, res) => {
   const { session } = req;
   const username = req.body.username;
 
-  // check if user in database
   const user = await User.findOne({ username });
 
   if (!user) return res.json({ message: "Incorrect Username ", status: false });
   else if (!(await bcrypt.compare(req.body.password, user.password)))
     return res.json({ message: "Incorrect Password", status: false });
+  else if (user.email !== req.body.email)
+  {
+    return res.json({ message: "Incorrect Email", status: false });
+  }
   else if (req.body.otpToken !== req.body.generatedOTPToken) {
     return res.json({ message: "Incorrect OTP Token", status: false });
   } else {

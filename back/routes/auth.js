@@ -14,10 +14,8 @@ router.post("/login", async (req, res) => {
   // check if user in database
   const user = await User.findOne({ username });
 
-  const hashedPasswordComparison = await bcrypt.compare(req.body.password, user.password)
-
   if (!user) return res.json({ message: "Incorrect Username ", status: false });
-  else if (!hashedPasswordComparison)
+  else if (!(await bcrypt.compare(req.body.password, user.password)))
     return res.json({ message: "Incorrect Password", status: false });
   else {
     session.authenticated = true;

@@ -3,30 +3,37 @@ const User = require("../model/user");
 const router = express.Router();
 const bcrypt = require('bcryptjs')
 
+const saltRounds = 10
+
 module.exports = router;
 
 router.post("/login", async (req, res) => {
   const { session } = req;
-  const { username, password } = req.body;
+  const username = req.body.username;
+  const hashedPassword = await bcrypt.hash(req.body.password, saltRounds)
+  
+  console.log('username is:', username);
+  console.log('password is:', req.body.password)
+  console.log('hashed password is:', hashedPassword);
 
   // check if user in database
-  const user = await User.findOne({ username });
+  // const user = await User.findOne({ username });
 
-  if (!user) return res.json({ message: "Incorrect Username ", status: false });
-  else if (user.password !== password)
-    return res.json({ message: "Incorrect Password", status: false });
-  else {
-    session.authenticated = true;
-    session.username = username;
-    res.json({ message: "Logged in", status: true });
-  }
+  // if (!user) return res.json({ message: "Incorrect Username ", status: false });
+  // else if (user.password !== password) // change this
+  //   return res.json({ message: "Incorrect Password", status: false });
+  // else {
+  //   session.authenticated = true;
+  //   session.username = username;
+  //   res.json({ message: "Logged in", status: true });
+  // }
 });
 
 router.post("/register", async (req, res) => {
   const { username, password, name } = req.body;
   const user = new User({
     username: username,
-    password: password,
+    password: password, // change this
     name: name,
   });
 

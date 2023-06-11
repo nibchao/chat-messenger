@@ -3,7 +3,7 @@ const User = require("../model/user");
 const router = express.Router();
 const bcrypt = require('bcryptjs')
 
-const saltRounds = 10
+const saltRounds = 10 // referenced https://heynode.com/blog/2020-04/salt-and-hash-passwords-bcrypt/
 
 module.exports = router;
 
@@ -25,13 +25,13 @@ router.post("/login", async (req, res) => {
 });
 
 router.post("/register", async (req, res) => {
-  const { username, password, name } = req.body;
+  const { username, password, email } = req.body;
   const hashedPassword = await bcrypt.hash(password, saltRounds)
 
   const user = new User({
     username: username,
     password: hashedPassword,
-    name: name,
+    email: email,
   });
 
   const dupeUserCheck = await User.findOne({ username });

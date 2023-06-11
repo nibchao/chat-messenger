@@ -4,6 +4,8 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const speakeasy = require("speakeasy");
+const dotenv = require("dotenv");
+dotenv.config("../.env");
 
 const saltRounds = 10; // referenced https://heynode.com/blog/2020-04/salt-and-hash-passwords-bcrypt/
 
@@ -28,34 +30,41 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.get("/otptoken", async (req, res) => {
+router.post("/otptoken", async (req, res) => {
   const secret = speakeasy.generateSecret();
   const OTP = speakeasy.totp({ secret: secret.base32, encoding: "base32" });
-
-  const test = async function main() {
+  const userEmail = req.body.email;
+  const sendEmail = async () => {
     // referenced https://nodemailer.com/about/
-    let testAccount = await nodemailer.createTestAccount();
-
-    let transporter = nodemailer.createTransport({
-      host: "smtp.ethereal.email",
-      port: 587,
-      secure: false, // true for 465, false for other ports
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      port: 465,
+      secure: true,
       auth: {
-        user: testAccount.user, // generated ethereal user
-        pass: testAccount.pass, // generated ethereal password
+        user: process.env.USER_EMAIL,
+        pass: process.env.USER_EMAIL_PASSWORD,
       },
     });
 
-    let info = await transporter.sendMail({
-      from: '"Fred Foo 👻" <foo@example.com>', // sender address
-      to: "bar@example.com, baz@example.com", // list of receivers
-      subject: "Hello ✔", // Subject line
-      html: `<p>Enter this code into the OTP field: ${OTP}</p>`, // html body
-    });
-    return nodemailer.getTestMessageUrl(info);
+    if (userEmail === "") {
+      console.log("error");
+    } else {
+      let info = await transporter.sendMail({
+        from: process.env.USER_EMAIL, // sender address
+        to: userEmail, // list of receivers
+        subject: "One-time Password (OTP) for Login", // Subject line
+        text: `Enter this code into the OTP field to login: ${OTP}`,
+      });
+      console.log(`Email with OTP sent to ${userEmail}.`);
+      return nodemailer.getTestMessageUrl(info);
+    }
   };
-  const dataSaved = { messageURL: await test(), generatedOTP: OTP };
-  res.status(200).json(dataSaved);
+  if (userEmail !== "") {
+    const dataSaved = { messageURL: await sendEmail(), generatedOTP: OTP };
+    res.status(200).json(dataSaved);
+  } else {
+    console.log("error");
+  }
 });
 
 router.post("/register", async (req, res) => {

@@ -149,6 +149,13 @@ io.on("connection", (socket) => {
         findMessage.reactions = currentMessageReactions;
         await findMessage.save();
       }
+      else
+      {
+        let index = currentMessageReactions.indexOf(data.reaction);
+        currentMessageReactions.splice(index, 1);
+        findMessage.reactions = currentMessageReactions;
+        await findMessage.save();
+      }
     }
   })
 

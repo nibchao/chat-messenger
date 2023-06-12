@@ -106,7 +106,7 @@ io.on("connection", (socket) => {
 
   socket.on("chat message", async (data) => {
     const { room, text } = data;
-    io.to(room).emit("chat message", { room, text });
+    io.to(room).emit("chat message", { room, text, username });
     await Promise.all([
       (findUser = await User.findOne({ username: username })),
       (findRoom = await Room.findOne({ name: room })),

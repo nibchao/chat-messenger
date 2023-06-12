@@ -147,14 +147,16 @@ io.on("connection", (socket) => {
       {
         currentMessageReactions.push(data.reaction);
         findMessage.reactions = currentMessageReactions;
-        await findMessage.save();
+        await findMessage.save();    
+        io.to(data.roomName).emit('reaction');
       }
       else
       {
         let index = currentMessageReactions.indexOf(data.reaction);
         currentMessageReactions.splice(index, 1);
         findMessage.reactions = currentMessageReactions;
-        await findMessage.save();
+        await findMessage.save();    
+        io.to(data.roomName).emit('reaction');
       }
     }
   })

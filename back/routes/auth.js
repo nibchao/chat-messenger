@@ -24,9 +24,11 @@ router.post("/login", async (req, res) => {
   {
     return res.json({ message: "Incorrect Email", status: false });
   }
-  else if (req.body.otpToken !== req.body.generatedOTPToken) {
-    return res.json({ message: "Incorrect OTP Token", status: false });
-  } else {
+  // COMMENTED OUT TO MAKE LOGGING IN LESS ANNOYING
+  // else if (req.body.otpToken !== req.body.generatedOTPToken) {
+  //   return res.json({ message: "Incorrect OTP Token", status: false });
+  // } 
+  else {
     session.authenticated = true;
     session.username = username;
     res.json({ message: "Logged in", status: true });
@@ -34,40 +36,41 @@ router.post("/login", async (req, res) => {
 });
 
 router.post("/otptoken", async (req, res) => {
-  const secret = speakeasy.generateSecret();
-  const OTP = speakeasy.totp({ secret: secret.base32, encoding: "base32" });
-  const userEmail = req.body.email;
-  const sendEmail = async () => {
-    // referenced https://nodemailer.com/about/
-    const transporter = nodemailer.createTransport({
-      service: "Gmail",
-      port: 465,
-      secure: true,
-      auth: {
-        user: process.env.USER_EMAIL,
-        pass: process.env.USER_EMAIL_PASSWORD,
-      },
-    });
+  // COMMENTED OUT TO MAKE LOGGING IN LESS ANNOYING
+  // const secret = speakeasy.generateSecret();
+  // const OTP = speakeasy.totp({ secret: secret.base32, encoding: "base32" });
+  // const userEmail = req.body.email;
+  // const sendEmail = async () => {
+  //   // referenced https://nodemailer.com/about/
+  //   const transporter = nodemailer.createTransport({
+  //     service: "Gmail",
+  //     port: 465,
+  //     secure: true,
+  //     auth: {
+  //       user: process.env.USER_EMAIL,
+  //       pass: process.env.USER_EMAIL_PASSWORD,
+  //     },
+  //   });
 
-    if (userEmail === "") {
-      console.log("error");
-    } else {
-      let info = await transporter.sendMail({
-        from: process.env.USER_EMAIL, // sender address
-        to: userEmail, // list of receivers
-        subject: "One-time Password (OTP) for Login", // Subject line
-        text: `Enter this code into the OTP field to login: ${OTP}`,
-      });
-      console.log(`Email with OTP sent to ${userEmail}.`);
-      return nodemailer.getTestMessageUrl(info);
-    }
-  };
-  if (userEmail !== "") {
-    const dataSaved = { messageURL: await sendEmail(), generatedOTP: OTP };
-    res.status(200).json(dataSaved);
-  } else {
-    console.log("error");
-  }
+  //   if (userEmail === "") {
+  //     console.log("error");
+  //   } else {
+  //     let info = await transporter.sendMail({
+  //       from: process.env.USER_EMAIL, // sender address
+  //       to: userEmail, // list of receivers
+  //       subject: "One-time Password (OTP) for Login", // Subject line
+  //       text: `Enter this code into the OTP field to login: ${OTP}`,
+  //     });
+  //     console.log(`Email with OTP sent to ${userEmail}.`);
+  //     return nodemailer.getTestMessageUrl(info);
+  //   }
+  // };
+  // if (userEmail !== "") {
+  //   const dataSaved = { messageURL: await sendEmail(), generatedOTP: OTP };
+  //   res.status(200).json(dataSaved);
+  // } else {
+  //   console.log("error");
+  // }
 });
 
 router.post("/register", async (req, res) => {

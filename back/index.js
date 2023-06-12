@@ -120,6 +120,38 @@ io.on("connection", (socket) => {
     const dataSaved = await chatMessage.save();
   });
 
+  socket.on("reaction", async (data) => {
+    const findRoom = await Room.findOne({ name: data.roomName });
+    const findMessage = await Messages.findOne({ message: {text: data.messageText }, sender: data.messageSenderID, room: findRoom._id });
+    if (!findRoom)
+    {
+      console.log('room not found');
+    }
+    else if (!findMessage)
+    {
+        console.log('message not found');
+    }
+    else
+    {
+      let currentMessageReactions = [];
+      currentMessageReactions = findMessage.reactions;
+      let reactionExists = false;
+      for (let cnt = 0; cnt < currentMessageReactions.length; cnt++)
+      {
+        if (currentMessageReactions[cnt] === data.reaction)
+        {
+          reactionExists = true;
+        }
+      }
+      if (!reactionExists)
+      {
+        currentMessageReactions.push(data.reaction);
+        findMessage.reactions = currentMessageReactions;
+        await findMessage.save();
+      }
+    }
+  })
+
   socket.on("disconnect", () => {
     console.log(`${username} disconnected.`);
   });

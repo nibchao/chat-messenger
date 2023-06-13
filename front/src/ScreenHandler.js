@@ -2,6 +2,7 @@ import react from "react";
 import Auth from "./Screens/Auth.js";
 import Lobby from "./Screens/Lobby.js";
 import Chatroom from "./Screens/Chatroom.js";
+import EditProfile from "./Screens/EditProfile.js";
 
 const server_url = "http://localhost:3001";
 
@@ -51,6 +52,10 @@ class ScreenHandler extends react.Component {
     } else if (this.state.screen === "chatroom") {
       display = (
         <Chatroom server_url={server_url} changeScreen={this.changeScreen} />
+      );
+    } else if (this.state.screen === "editprofile") {
+      display = (
+        <EditProfile server_url={server_url} changeScreen={this.changeScreen} />
       );
     }
     return <div>{display}</div>;

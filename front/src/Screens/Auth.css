@@ -16,13 +16,15 @@ h1 {
 
 #login-button,
 #register-button,
-#generate-otp-button {
+#generate-otp-button,
+#edit-profile-button {
   border-radius: 10px;
   margin: 10px;
 }
 
 #login-button:hover,
-#register-button:hover {
+#register-button:hover,
+#edit-profile-button:hover {
   background-color: gold;
 }
 

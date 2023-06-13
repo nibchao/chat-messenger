@@ -9,6 +9,10 @@ const bodyParser = require("body-parser");
 const Messages = require("./model/messages");
 const User = require("./model/user");
 const Room = require("./model/room");
+const multer = require('multer');
+const path = require('path');
+const { v4: uuidv4 } = require('uuid');
+const fs = require('fs');
 
 const app = express();
 const server = http.createServer(app);
@@ -43,7 +47,22 @@ app.use(sessionMiddleware);
 
 const auth = require("./routes/auth");
 const rooms = require("./routes/rooms");
+const userRoutes = require("./routes/userRoutes");    
 const { networkInterfaces } = require("os");
+
+//setting up multer
+const storage = multer.diskStorage({
+  destination: function(req, file, cb) {
+    cb(null, './public/images');
+  }, 
+  filename: function(req, file, cb) {
+    cb(null, uuidv4() + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({
+  storage: storage
+});
 
 app.get("/", (req, res) => {
   if (req.session && req.session.authenticated) {
@@ -67,6 +86,10 @@ app.use((req, res, next) => {
 });
 
 app.use("/api/rooms/", rooms);
+
+app.use('/api/users/', userRoutes); //use middleware for userRouting
+
+app.use('/images', express.static('public/images'));
 
 // Start the server
 server.listen(process.env.PORT, () => {
@@ -164,5 +187,20 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log(`${username} disconnected.`);
+  });
+
+  socket.on("getUser", async (userId) => {
+    const user = await User.findById(userId);
+    socket.emit('userDetails',  user);
+  });
+
+  socket.on("updateProfile", async ({userId, profileImage, newUsername}) => {
+    const filename = uuidv4() + '.png';
+    fs.writeFileSync('./public/images/' + filename, profileImage, 'base64');
+    const user = await User.findById(userId);
+    user.profileImage = filename;
+    user.username = newUsername;
+    await user.save();
+    socket.emit('userUpdated',  user);
   });
 });

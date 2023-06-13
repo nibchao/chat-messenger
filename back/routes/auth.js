@@ -18,12 +18,12 @@ router.post("/login", async (req, res) => {
   const user = await User.findOne({ username });
 
   if (!user) return res.json({ message: "Incorrect Username ", status: false });
-  else if (!(await bcrypt.compare(req.body.password, user.password)))
-    return res.json({ message: "Incorrect Password", status: false });
-  else if (user.email !== req.body.email)
-  {
-    return res.json({ message: "Incorrect Email", status: false });
-  }
+  // else if (!(await bcrypt.compare(req.body.password, user.password)))
+  //   return res.json({ message: "Incorrect Password", status: false });
+  // else if (user.email !== req.body.email)
+  // {
+  //   return res.json({ message: "Incorrect Email", status: false });
+  // }
   // COMMENTED OUT TO MAKE LOGGING IN LESS ANNOYING
   // else if (req.body.otpToken !== req.body.generatedOTPToken) {
   //   return res.json({ message: "Incorrect OTP Token", status: false });

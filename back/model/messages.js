@@ -15,13 +15,15 @@ const messageSchema = mongoose.Schema(
       ref: "Room",
       required: true,
     },
-    reactions: [{
-      type: String,
-    }]
+    reactions: [
+      {
+        type: String,
+      },
+    ],
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 module.exports = mongoose.model("Messages", messageSchema);

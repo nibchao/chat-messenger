@@ -118,7 +118,10 @@ io.on("connection", (socket) => {
     });
     await chatMessage.save();
 
-    io.to(roomName).emit("chat message", { room: roomName, messageText: messageText });
+    io.to(roomName).emit("chat message", {
+      room: roomName,
+      messageText: messageText,
+    });
   });
 
   socket.on("reaction", async (data) => {

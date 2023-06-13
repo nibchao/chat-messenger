@@ -23,16 +23,13 @@ router.post("/login", async (req, res) => {
   const user = await User.findOne({ username: inputtedUsername });
 
   if (!user) return res.json({ message: "Incorrect Username! " });
-  // COMMENTED OUT TO MAKE LOGGING IN LESS ANNOYING
-  // else if (!(await bcrypt.compare(inputtedPassword, user.password)))
-  //   return res.json({ message: "Incorrect Password!" });
-  // else if (user.email !== inputtedEmail) {
-  //   return res.json({ message: "Incorrect Email!" });
-  // }
-  // else if (inputtedOTPToken !== userGeneratedOTPToken) {
-  //   return res.json({ message: "Incorrect OTP Token!" });
-  // }
-  else {
+  else if (!(await bcrypt.compare(inputtedPassword, user.password)))
+    return res.json({ message: "Incorrect Password!" });
+  else if (user.email !== inputtedEmail) {
+    return res.json({ message: "Incorrect Email!" });
+  } else if (inputtedOTPToken !== userGeneratedOTPToken) {
+    return res.json({ message: "Incorrect OTP Token!" });
+  } else {
     session.authenticated = true;
     session.username = inputtedUsername;
     res.json({ message: "Logged in", status: true });
@@ -40,7 +37,6 @@ router.post("/login", async (req, res) => {
 });
 
 router.post("/otptoken", async (req, res) => {
-  // COMMENTED OUT TO MAKE LOGGING IN LESS ANNOYING
   const inputtedEmail = req.body.Email;
   if (inputtedEmail === "") {
     return res.json({ message: "No email was provided!" });
@@ -116,6 +112,3 @@ router.get("/logout", (req, res) => {
   req.session.destroy();
   res.send({ message: "Logged out", status: true });
 });
-
-// extra feature for final project: add route that lets user edit account information
-// Allow users to have profile pictures and edit their name or profile picture: 5%.

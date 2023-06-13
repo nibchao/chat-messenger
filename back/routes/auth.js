@@ -27,7 +27,7 @@ router.post("/login", async (req, res) => {
   // COMMENTED OUT TO MAKE LOGGING IN LESS ANNOYING
   // else if (req.body.otpToken !== req.body.generatedOTPToken) {
   //   return res.json({ message: "Incorrect OTP Token", status: false });
-  // } 
+  // }
   else {
     session.authenticated = true;
     session.username = username;
@@ -51,7 +51,6 @@ router.post("/otptoken", async (req, res) => {
   //       pass: process.env.USER_EMAIL_PASSWORD,
   //     },
   //   });
-
   //   if (userEmail === "") {
   //     console.log("error");
   //   } else {

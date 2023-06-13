@@ -113,14 +113,13 @@ router.post("/messages", async (req, res) => {
   }
 });
 
-router.post('/getUsernames', async (req, res) => {
+router.post("/getUsernames", async (req, res) => {
   let userIDArray = req.body.userIDArray;
   let usernameArray = [];
 
-  for (let cnt = 0; cnt < userIDArray.length; cnt++)
-  {
-    let user = await User.findById({ "_id": userIDArray[cnt] });
+  for (let cnt = 0; cnt < userIDArray.length; cnt++) {
+    let user = await User.findById({ _id: userIDArray[cnt] });
     usernameArray[cnt] = user.username;
   }
   res.status(200).json(usernameArray);
-})
+});

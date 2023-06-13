@@ -105,5 +105,33 @@ router.get("/logout", (req, res) => {
   res.send({ message: "Logged out", status: true });
 });
 
-// extra feature for final project: add route that lets user edit account information
-// Allow users to have profile pictures and edit their name or profile picture: 5%.
+router.post('/tempLogin', async (req, res) => {
+  const inputtedUsername = req.body.username;
+  const inputtedPassword = req.body.password;
+  const inputtedEmail = req.body.email;
+
+  const findUserArray = await User.find({ username: inputtedUsername });
+
+  let foundCorrectUser;
+  for (let cnt = 0; cnt < findUserArray.length; cnt++)
+  {
+    if (findUserArray[cnt].email === inputtedEmail && (await bcrypt.compare(inputtedPassword, findUserArray[cnt].password)))
+    {
+      foundCorrectUser = findUserArray[cnt];
+      break;
+    }
+  }
+
+  const { session } = req;
+  session.username = inputtedUsername;
+  session.editProfileBool = true;
+
+  if (foundCorrectUser !== undefined)
+  {
+    res.status(200).json( {foundUserData: foundCorrectUser, status: true} );
+  }
+  else
+  {
+    return res.json({ message: "Failed to find user with matching inputted credentials." });
+  }
+})

@@ -46,7 +46,7 @@ const rooms = require("./routes/rooms");
 const { networkInterfaces } = require("os");
 
 app.get("/", (req, res) => {
-  if (req.session && req.session.authenticated) {
+  if (req.session && req.session.authenticated) { // this is making page refresh go to lobby from edit profile page
     res.json({ message: "logged in" });
   } else {
     res.json({ message: "not logged in" });
@@ -57,7 +57,7 @@ app.use("/api/auth/", auth);
 
 // checking the session before accessing the rooms
 app.use((req, res, next) => {
-  if (req.session && req.session.authenticated) {
+  if (req.session && req.session.authenticated || (req.session.editProfileBool && req.session)) {
     next();
   } else {
     res
@@ -78,7 +78,7 @@ io.use((socket, next) => {
 });
 
 io.use((socket, next) => {
-  if (socket.request.session && socket.request.session.authenticated) {
+  if (socket.request.session && socket.request.session.authenticated || (socket.request.session.editProfileBool && socket.request.session)) {
     next();
   } else {
     next(new Error("Unauthorized in socket."));

@@ -122,18 +122,25 @@ io.on("connection", (socket) => {
 
   socket.on("reaction", async (data) => {
     const findRoom = await Room.findOne({ name: data.roomName });
-    const findMessage = await Messages.findOne({
+    const findMessage = await Messages.find({
       message: { text: data.messageText },
       sender: data.messageSenderID,
       room: findRoom._id,
     });
+    let correctMessage;
+    for (let cnt = 0; cnt < findMessage.length; cnt++) {
+      if (findMessage[cnt].createdAt.toISOString() == data.createdAtTime) {
+        correctMessage = findMessage[cnt];
+        break;
+      }
+    }
     if (!findRoom) {
       console.log("room not found");
-    } else if (!findMessage) {
+    } else if (!correctMessage) {
       console.log("message not found");
     } else {
       let currentMessageReactions = [];
-      currentMessageReactions = findMessage.reactions;
+      currentMessageReactions = correctMessage.reactions;
       let reactionExists = false;
       for (let cnt = 0; cnt < currentMessageReactions.length; cnt++) {
         if (currentMessageReactions[cnt] === data.reaction) {
@@ -142,14 +149,14 @@ io.on("connection", (socket) => {
       }
       if (!reactionExists) {
         currentMessageReactions.push(data.reaction);
-        findMessage.reactions = currentMessageReactions;
-        await findMessage.save();
+        correctMessage.reactions = currentMessageReactions;
+        await correctMessage.save();
         io.to(data.roomName).emit("reaction");
       } else {
         let index = currentMessageReactions.indexOf(data.reaction);
         currentMessageReactions.splice(index, 1);
-        findMessage.reactions = currentMessageReactions;
-        await findMessage.save();
+        correctMessage.reactions = currentMessageReactions;
+        await correctMessage.save();
         io.to(data.roomName).emit("reaction");
       }
     }

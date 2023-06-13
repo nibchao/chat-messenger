@@ -112,13 +112,13 @@ io.on("connection", (socket) => {
     ]);
 
     const chatMessage = new Messages({
-      message: { text: text },
+      message: { text: messageText },
       sender: findUser._id,
       room: findRoom._id,
     });
     await chatMessage.save();
 
-    io.to(roomName).emit("chat message", { roomName, messageText });
+    io.to(roomName).emit("chat message", { room: roomName, messageText: messageText });
   });
 
   socket.on("reaction", async (data) => {

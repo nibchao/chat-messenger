@@ -13,84 +13,92 @@ module.exports = router;
 
 router.post("/login", async (req, res) => {
   const { session } = req;
-  const username = req.body.username;
 
-  const user = await User.findOne({ username });
+  const inputtedUsername = req.body.Username;
+  const inputtedPassword = req.body.Password;
+  const inputtedEmail = req.body.Email;
+  const inputtedOTPToken = req.body.OTPToken;
+  const userGeneratedOTPToken = req.body.generatedOTPToken;
 
-  if (!user) return res.json({ message: "Incorrect Username ", status: false });
-  // else if (!(await bcrypt.compare(req.body.password, user.password)))
-  //   return res.json({ message: "Incorrect Password", status: false });
-  // else if (user.email !== req.body.email)
-  // {
-  //   return res.json({ message: "Incorrect Email", status: false });
-  // }
-  // COMMENTED OUT TO MAKE LOGGING IN LESS ANNOYING
-  // else if (req.body.otpToken !== req.body.generatedOTPToken) {
-  //   return res.json({ message: "Incorrect OTP Token", status: false });
-  // }
-  else {
+  const user = await User.findOne({ username: inputtedUsername });
+
+  if (!user) return res.json({ message: "Incorrect Username! " });
+  else if (!(await bcrypt.compare(inputtedPassword, user.password)))
+    return res.json({ message: "Incorrect Password!" });
+  else if (user.email !== inputtedEmail) {
+    return res.json({ message: "Incorrect Email!" });
+  } else if (inputtedOTPToken !== userGeneratedOTPToken) {
+    return res.json({ message: "Incorrect OTP Token!" });
+  } else {
     session.authenticated = true;
-    session.username = username;
+    session.username = inputtedUsername;
     res.json({ message: "Logged in", status: true });
   }
 });
 
 router.post("/otptoken", async (req, res) => {
-  // COMMENTED OUT TO MAKE LOGGING IN LESS ANNOYING
-  // const secret = speakeasy.generateSecret();
-  // const OTP = speakeasy.totp({ secret: secret.base32, encoding: "base32" });
-  // const userEmail = req.body.email;
-  // const sendEmail = async () => {
-  //   // referenced https://nodemailer.com/about/
-  //   const transporter = nodemailer.createTransport({
-  //     service: "Gmail",
-  //     port: 465,
-  //     secure: true,
-  //     auth: {
-  //       user: process.env.USER_EMAIL,
-  //       pass: process.env.USER_EMAIL_PASSWORD,
-  //     },
-  //   });
-  //   if (userEmail === "") {
-  //     console.log("error");
-  //   } else {
-  //     let info = await transporter.sendMail({
-  //       from: process.env.USER_EMAIL, // sender address
-  //       to: userEmail, // list of receivers
-  //       subject: "One-time Password (OTP) for Login", // Subject line
-  //       text: `Enter this code into the OTP field to login: ${OTP}`,
-  //     });
-  //     console.log(`Email with OTP sent to ${userEmail}.`);
-  //     return nodemailer.getTestMessageUrl(info);
-  //   }
-  // };
-  // if (userEmail !== "") {
-  //   const dataSaved = { messageURL: await sendEmail(), generatedOTP: OTP };
-  //   res.status(200).json(dataSaved);
-  // } else {
-  //   console.log("error");
-  // }
+  const inputtedEmail = req.body.Email;
+  if (inputtedEmail === "") {
+    return res.json({ message: "No email was provided!" });
+  } else {
+    const secret = speakeasy.generateSecret();
+    const OTP = speakeasy.totp({ secret: secret.base32, encoding: "base32" });
+    const inputtedEmail = req.body.Email;
+    const sendEmail = async () => {
+      // referenced https://nodemailer.com/about/
+      const transporter = nodemailer.createTransport({
+        service: "Gmail",
+        port: 465,
+        secure: true,
+        auth: {
+          user: process.env.USER_EMAIL,
+          pass: process.env.USER_EMAIL_PASSWORD,
+        },
+      });
+      let info = await transporter.sendMail({
+        from: process.env.USER_EMAIL,
+        to: inputtedEmail,
+        subject: "One-time Password (OTP) for CS110 Project Login",
+        text: `Enter this code into the OTP field to login: ${OTP}.`,
+      });
+      console.log(`Email with OTP sent to ${inputtedEmail}.`);
+      return nodemailer.getTestMessageUrl(info);
+    };
+    try {
+      const dataSaved = { messageURL: await sendEmail(), generatedOTP: OTP };
+      res.status(200).json({
+        message: `Check your "${inputtedEmail}" email for the OTP code to login.`,
+        dataSaved: dataSaved,
+      });
+    } catch (error) {
+      console.log(error);
+      res.send("ERROR!");
+    }
+  }
 });
 
 router.post("/register", async (req, res) => {
-  const { username, password, email } = req.body;
-  const hashedPassword = await bcrypt.hash(password, saltRounds);
+  const inputtedUsername = req.body.Username;
+  const inputtedPassword = req.body.Password;
+  const inputtedEmail = req.body.Email;
+
+  const hashedPassword = await bcrypt.hash(inputtedPassword, saltRounds);
 
   const user = new User({
-    username: username,
+    username: inputtedUsername,
     password: hashedPassword,
-    email: email,
+    email: inputtedEmail,
   });
 
-  const dupeUserCheck = await User.findOne({ username });
+  const dupeUserCheck = await User.findOne({ username: inputtedUsername });
 
   if (dupeUserCheck) {
-    console.log("Account with username " + username + " already exists");
+    console.log(`Account with username, ${inputtedUsername}, already exists.`);
   } else {
     try {
       const dataSaved = await user.save();
       res.status(200).json(dataSaved);
-      console.log("Account with username " + username + " was created");
+      console.log(`Account with username, ${inputtedUsername} was created!`);
     } catch (error) {
       console.log(error);
       res.send("ERROR!");
@@ -104,6 +112,3 @@ router.get("/logout", (req, res) => {
   req.session.destroy();
   res.send({ message: "Logged out", status: true });
 });
-
-// extra feature for final project: add route that lets user edit account information
-// Allow users to have profile pictures and edit their name or profile picture: 5%.

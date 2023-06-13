@@ -1,0 +1,31 @@
+#main-container {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  flex-direction: column;
+}
+#chat-icon {
+  margin-bottom: 30px;
+}
+
+h1 {
+  font-family: Helvetica;
+}
+
+#login-button,
+#register-button,
+#generate-otp-button {
+  border-radius: 10px;
+  margin: 10px;
+}
+
+#login-button:hover,
+#register-button:hover {
+  background-color: gold;
+}
+
+#generate-otp-button:hover {
+  background-color: lightblue;
+}

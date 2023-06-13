@@ -58,7 +58,7 @@ router.post("/join", async (req, res) => {
       try {
         user.rooms.push(roomName);
         const dataSaved = await user.save();
-        res.status(200).json(dataSaved);
+        res.status(200).json({ dataSaved, room: roomName });
         console.log(`${username} joined the "${roomName} room.`);
       } catch (error) {
         console.log(error);
@@ -83,7 +83,7 @@ router.delete("/leave", async (req, res) => {
       const user = await User.findOne({ username: username });
       user.rooms = user.rooms.filter((roomVar) => roomVar !== roomName);
       const dataSaved = await user.save();
-      res.status(200).json(dataSaved);
+      res.status(200).json({ dataSaved, room: roomName });
       console.log(`${username} left the "${roomName} room.`);
     } catch (error) {
       console.log(error);

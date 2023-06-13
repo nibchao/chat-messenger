@@ -105,7 +105,7 @@ router.get("/logout", (req, res) => {
   res.send({ message: "Logged out", status: true });
 });
 
-router.post('/tempLogin', async (req, res) => {
+router.post("/tempLogin", async (req, res) => {
   const inputtedUsername = req.body.username;
   const inputtedPassword = req.body.password;
   const inputtedEmail = req.body.email;
@@ -113,10 +113,11 @@ router.post('/tempLogin', async (req, res) => {
   const findUserArray = await User.find({ username: inputtedUsername });
 
   let foundCorrectUser;
-  for (let cnt = 0; cnt < findUserArray.length; cnt++)
-  {
-    if (findUserArray[cnt].email === inputtedEmail && (await bcrypt.compare(inputtedPassword, findUserArray[cnt].password)))
-    {
+  for (let cnt = 0; cnt < findUserArray.length; cnt++) {
+    if (
+      findUserArray[cnt].email === inputtedEmail &&
+      (await bcrypt.compare(inputtedPassword, findUserArray[cnt].password))
+    ) {
       foundCorrectUser = findUserArray[cnt];
       break;
     }
@@ -126,12 +127,26 @@ router.post('/tempLogin', async (req, res) => {
   session.username = inputtedUsername;
   session.editProfileBool = true;
 
-  if (foundCorrectUser !== undefined)
-  {
-    res.status(200).json( {foundUserData: foundCorrectUser, status: true} );
+  if (foundCorrectUser !== undefined) {
+    res.status(200).json({ foundUserData: foundCorrectUser, status: true });
+  } else {
+    return res.json({
+      message: "Failed to find user with matching inputted credentials.",
+    });
   }
-  else
-  {
-    return res.json({ message: "Failed to find user with matching inputted credentials." });
+});
+
+router.post("/newUsername", async (req, res) => {
+  const currentUsername = req.session.username;
+
+  const findUser = await User.findOne({ username: currentUsername }); // temp, need to pass in email and password the user enters from above post
+
+  if (!findUser) {
+    return res.json({ message: "Failed to find user." });
+  } else {
+    findUser.username = req.body.NewUsername;
+    await findUser.save();
+    req.session.destroy();
+    res.status(200).json({ message: "Username updated! " });
   }
-})
+});

@@ -32,7 +32,7 @@ router.post("/create", async (req, res) => {
     try {
       const dataSaved = await newRoom.save();
       res.status(200).json(dataSaved);
-      console.log(`Created room with "${namroomNamee}" name!`);
+      console.log(`Created room with "${roomName}" name!`);
     } catch (error) {
       console.log(error);
       res.send("ERROR!");

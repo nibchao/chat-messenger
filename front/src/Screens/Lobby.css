@@ -1,0 +1,75 @@
+#manage-room-container {
+  text-align: center;
+}
+
+h1 {
+  font-family: Helvetica;
+}
+
+#logout-Button {
+  margin-left: 10px;
+  margin-top: 10px;
+  height: 40px;
+  width: 100px;
+  border-radius: 50px;
+}
+
+#logout-Button:hover {
+  background-color: lightblue;
+}
+
+#create-room-button:hover,
+#join-room-button:hover,
+#leave-room-button:hover {
+  background-color: lightgreen;
+}
+
+#create-room-button {
+  height: 40px;
+  width: 150px;
+  border-radius: 50px;
+}
+
+#join-room-button {
+  height: 40px;
+  width: 150px;
+  border-radius: 50px;
+}
+
+#leave-room-button {
+  height: 40px;
+  width: 150px;
+  border-radius: 50px;
+}
+
+#room-buttons:hover {
+  background-color: thistle;
+}
+
+#manage-button-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.input-design {
+  height: 40px;
+  border-radius: 50px;
+  text-align: center;
+  margin-left: 10px;
+}
+
+#lobby-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 20px;
+}
+#lobby-header {
+  text-align: center;
+}
+#room-buttons {
+  width: 150px;
+  border-radius: 50px;
+}

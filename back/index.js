@@ -30,7 +30,7 @@ mongoose.connect(process.env.MONGO_URL);
 const database = mongoose.connection;
 
 database.on("error", (error) => console.error(error));
-database.once("open", () => console.log("Connected to Database"));
+database.once("open", () => console.log("Connected to Database!"));
 
 // Set up the session
 const sessionMiddleware = session({
@@ -49,7 +49,6 @@ app.get("/", (req, res) => {
   if (req.session && req.session.authenticated) { // this is making page refresh go to lobby from edit profile page
     res.json({ message: "logged in" });
   } else {
-    //console.log("not logged in");
     res.json({ message: "not logged in" });
   }
 });
@@ -61,8 +60,9 @@ app.use((req, res, next) => {
   if (req.session && req.session.authenticated || (req.session.editProfileBool && req.session)) {
     next();
   } else {
-    // next();
-    res.status(401).send("Unauthorized");
+    res
+      .status(401)
+      .send("Unauthorized to access room, refresh the page and login again.");
   }
 });
 
@@ -70,11 +70,10 @@ app.use("/api/rooms/", rooms);
 
 // Start the server
 server.listen(process.env.PORT, () => {
-  console.log(`Server listening on port ${process.env.PORT}`);
+  console.log(`Server listening on port ${process.env.PORT}.`);
 });
 
 io.use((socket, next) => {
-  console.log("socket io middleware");
   sessionMiddleware(socket.request, {}, next);
 });
 
@@ -82,8 +81,7 @@ io.use((socket, next) => {
   if (socket.request.session && socket.request.session.authenticated || (socket.request.session.editProfileBool && socket.request.session)) {
     next();
   } else {
-    console.log("unauthorized");
-    next(new Error("unauthorized"));
+    next(new Error("Unauthorized in socket."));
   }
 });
 
@@ -105,60 +103,77 @@ io.on("connection", (socket) => {
   });
 
   socket.on("chat message", async (data) => {
-    const { room, text } = data;
+    const roomName = data.room;
+    const messageText = data.text;
+
     await Promise.all([
       (findUser = await User.findOne({ username: username })),
-      (findRoom = await Room.findOne({ name: room })),
+      (findRoom = await Room.findOne({ name: roomName })),
     ]);
 
     const chatMessage = new Messages({
-      message: { text: text },
+      message: { text: messageText },
       sender: findUser._id,
       room: findRoom._id,
     });
-    const dataSaved = await chatMessage.save();
-    io.to(room).emit("chat message", { room, text });
+    await chatMessage.save();
+
+    io.to(roomName).emit("chat message", {
+      room: roomName,
+      messageText: messageText,
+    });
   });
 
   socket.on("reaction", async (data) => {
-    const findRoom = await Room.findOne({ name: data.roomName });
-    const findMessage = await Messages.find({
-      message: { text: data.messageText },
-      sender: data.messageSenderID,
-      room: findRoom._id,
+    const roomName = data.roomName;
+    const messageText = data.messageText;
+    const messageSenderID = data.messageSenderID;
+    const messageCreatedAtTimestamp = data.createdAtTime;
+    const messageReactions = data.reaction;
+
+    const findRoom = await Room.findOne({ name: roomName });
+    const roomObjectID = findRoom._id;
+    const findMessageArray = await Messages.find({
+      message: { text: messageText },
+      sender: messageSenderID,
+      room: roomObjectID,
     });
+
     let correctMessage;
-    for (let cnt = 0; cnt < findMessage.length; cnt++) {
-      if (findMessage[cnt].createdAt.toISOString() == data.createdAtTime) {
-        correctMessage = findMessage[cnt];
+    for (let cnt = 0; cnt < findMessageArray.length; cnt++) {
+      if (
+        findMessageArray[cnt].createdAt.toISOString() ==
+        messageCreatedAtTimestamp
+      ) {
+        correctMessage = findMessageArray[cnt];
         break;
       }
     }
     if (!findRoom) {
-      console.log("room not found");
+      console.log(`"${roomName}" room was not found, failed to add reaction.`);
     } else if (!correctMessage) {
-      console.log("message not found");
+      console.log(
+        `"${messageText}" message was not found, failed to add reaction.`
+      );
     } else {
       let currentMessageReactions = [];
       currentMessageReactions = correctMessage.reactions;
       let reactionExists = false;
       for (let cnt = 0; cnt < currentMessageReactions.length; cnt++) {
-        if (currentMessageReactions[cnt] === data.reaction) {
+        if (currentMessageReactions[cnt] === messageReactions) {
           reactionExists = true;
+          break;
         }
       }
       if (!reactionExists) {
-        currentMessageReactions.push(data.reaction);
-        correctMessage.reactions = currentMessageReactions;
-        await correctMessage.save();
-        io.to(data.roomName).emit("reaction");
+        currentMessageReactions.push(messageReactions);
       } else {
-        let index = currentMessageReactions.indexOf(data.reaction);
+        let index = currentMessageReactions.indexOf(messageReactions);
         currentMessageReactions.splice(index, 1);
-        correctMessage.reactions = currentMessageReactions;
-        await correctMessage.save();
-        io.to(data.roomName).emit("reaction");
       }
+      correctMessage.reactions = currentMessageReactions;
+      await correctMessage.save();
+      io.to(roomName).emit("reaction");
     }
   });
 
